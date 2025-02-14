@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block main %}
+
+    {% set total_amount = namespace(value=0) %}
+
+    <table class="table table-striped mb-3">
+        <thead>
+            <tr>
+                <th scope="col">Stock</th>
+                <th scope="col">Current Price</th>
+                <th scope="col">No of Shares</th>
+                <th scope="col">Avg Price</th>
+                <th scope="col">TOTAL</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for stock in stocks %}
+                <tr>
+
+                    {% set current_price = lookup(stock.symbol).price %}
+
+                    <td>{{ stock.symbol }}</td>
+                    <td>{{ usd(current_price) }}</td>
+                    <td>{{ stock.shares }}</td>
+                    {% if stock.avg_price > current_price %}
+                        <td style="color: green;">{{ usd(stock.avg_price) }}</td>
+                    {% elif current_price > stock.avg_price %}
+                        <td style="color: red;">{{ usd(stock.avg_price) }}</td>
+                    {% endif %}
+                    <td>{{ usd(stock.shares * current_price) }}</td>
+                    {% set total_amount.value = total_amount.value + (stock.shares * current_price) %}
+                </tr>
+            {% endfor %}
+
+            <tr>
+                <td colspan="3"></td>
+                <td><b>Cash</b></td>
+                <td>{{ usd(cash) }}</td>
+            </tr>
+
+            <tr>
+                <td colspan="3"></td>
+                <td><b>Net Asset Value</b></td>
+                <td>{{ usd(cash + total_amount.value) }}</td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    <form action="/" method="post">
+        <div class="mb-3 mt-3">
+            <p><b>Add Cash</b></p>
+            <input autocomplete="off" class="form-control mx-auto w-auto mb-3" name="cash" placeholder="Enter cash amount" type="number">
+        </div>
+        <button class="btn btn-primary mb-3" type="submit">Add</button>
+    </form>
+{% endblock %}
